@@ -1,130 +1,93 @@
-# go-mcts-project
-Python Go implementation and experiments using Monte Carlo Tree Search.
-# Go / MCTS experiment analysis
+# Go and Monte Carlo Tree Search
 
-This package analyses James Ward-Phillips's 650 unique completed Go games.
-It contains the original uploaded game records, a research report, six figures
-in PNG and vector PDF formats, summary tables, and reproducible analysis code.
-The game engine and Pygame app were not included in the upload and are not
-included in this analysis package.
+A Python Go project investigating how board size and Monte Carlo Tree Search
+(MCTS) search budgets affect game length and playing strength.
 
 ## Start here
 
-- `Go_MCTS_Report.pdf`: illustrated research report for review.
-- `Go_MCTS_Report.md`: editable text of the same report.
-- `analysis/figures/`: six figures, each in PNG and PDF.
-- `analysis/experiment_summary.csv`: results for all eight settings.
-- `analysis/games.csv`: one row per unique completed game.
-- `analysis/analysis.json`: estimates, intervals, model details and audit results.
-- `analysis/source_inventory.csv`: original-file counts and SHA-256 hashes.
-- `analysis/duplicate_records.csv`: the two excluded repeat records.
-- `analysis/failed_records.csv`: the two search-error records and recovery status.
-- `raw/`: all 11 original JSONL files, unchanged.
-- `reference/overnight_summary_original.csv`: the earlier, incomplete summary;
-  it is retained for reference and is not treated as additional game data.
+- [Read the illustrated project report](Go_MCTS_Analysis_Package/go_mcts_analysis/Go_MCTS_Report.pdf)
+- [Read the report as Markdown](Go_MCTS_Analysis_Package/go_mcts_analysis/Go_MCTS_Report.md)
+- [View the figures](Go_MCTS_Analysis_Package/go_mcts_analysis/analysis/figures/)
+- [View the experiment summary](Go_MCTS_Analysis_Package/go_mcts_analysis/analysis/experiment_summary.csv)
+- [Read the detailed analysis and methods notes](Go_MCTS_Analysis_Package/go_mcts_analysis/README.md)
 
-## Main findings
+## What is included
 
-The 100-versus-100 baseline contains 100 games at each size from 5 x 5 through
-9 x 9. Mean lengths are 32.14, 47.36, 64.03, 89.33 and 107.65 turns.
-The weighted quadratic fit is approximately E[T] = 1.325 n^2 over these sizes.
-This is a finite-range result for these agents and rules, not a universal law.
+- `Go_MCTS_Analysis_Package/go_state.py`: game state, legal moves, captures,
+  positional repetition checks, passing and simplified area scoring.
+- `Go_MCTS_Analysis_Package/MCTS.py`: UCT-based MCTS with random rollouts.
+- `Go_MCTS_Analysis_Package/random_agent.py`: random-move helper used by MCTS.
+- `Go_MCTS_Analysis_Package/run_match.py`: a console match between two MCTS agents.
+- `Go_MCTS_Analysis_Package/gologic.py`: an earlier procedural game-logic version.
+- `Go_MCTS_Analysis_Package/go_mcts_analysis/`: raw records, analysis code,
+  summary tables, figures and the written report.
 
-On 5 x 5, the 1,000-iteration agent won 48 of 50 games against the
-100-iteration agent, with 25 games in each colour assignment. At equal
-budgets the 100-each and 1,000-each mean lengths were 32.14 and 32.60 turns.
-There is no clear mean-length difference at the available precision and
-no resolved odd/even effect after an exploratory linear size adjustment.
+The standalone Pygame interface is not included in this repository snapshot.
+The engine, console match and analysis can be used without a graphical display.
 
-## Reproduce the analysis
+## Setup
 
-Use Python 3.10 or newer. From this directory:
+Use Python 3.10 or newer. Download and extract this repository, or clone it.
+Open a terminal in the repository's main folder, then run:
 
 ```bash
 python -m pip install -r requirements.txt
-python analyse_go.py
-python make_report.py
 ```
 
-To choose different directories:
+On Windows, `py` can be used instead of `python` if that is how Python is installed.
+
+## Run a console match
+
+From the repository's main folder:
 
 ```bash
-python analyse_go.py --input raw --output analysis
-python make_report.py --analysis analysis --output Go_MCTS_Report.pdf
+python Go_MCTS_Analysis_Package/run_match.py
 ```
 
-The report builder uses the DejaVu Sans fonts distributed with Matplotlib.
-Exact versions used for this analysis are recorded in `analysis/analysis.json`.
-The bootstrap uses 20,000 within-size resamples and seed 20261019. Rebuilding
-may change PDF metadata or rendering slightly across software versions, but
-the input records and statistical definitions are preserved.
+The script currently uses a 5 x 5 board, 7.5 komi, 100 MCTS iterations per move
+for each player, and a 500-turn limit. It prints moves and the final board and
+score. This example is not the original batch logger used for the recorded data.
 
-## How to understand the figures
+## Reproduce the analysis
 
-1. **Board size:** the left panel shows average turns and a fitted quadratic;
-   the right divides the averages by n^2. Bars describe uncertainty in means.
-2. **Distributions:** every game's length is divided by n^2. The histogram
-   height is the fraction of games in a common-width bin, not a probability
-   density. The last panel shows cumulative fractions.
-3. **Strength:** the higher-budget win rate is reported separately by colour,
-   with Wilson confidence intervals for 25 games in each condition.
-4. **Equal budgets:** raising both agents' budgets is compared with the
-   baseline on 5 x 5, with 100 games in each condition.
-5. **Parity:** odd and even sizes are highlighted, with a reference of 50%
-   for Black. The report also gives a model-dependent size-adjusted estimate.
-6. **Turn components:** from an empty board, turns equal stones remaining
-   plus stones captured plus passes. Each component is divided by board area.
+From the repository's main folder:
 
-## Statistical methods
+```bash
+python Go_MCTS_Analysis_Package/go_mcts_analysis/analyse_go.py
+```
 
-- Mean intervals: Student t intervals using the sample standard error.
-- Equal-budget mean difference: independent-batch Welch interval.
-- Within-colour win rates: 95% Wilson intervals, including endpoint cases.
-- Quadratic fit: weighted least squares through the origin on n^2, with
-  inverse estimated variances of the board-size means.
-- Power-law fit: weighted regression of log(group mean) on log(n), using
-  estimated inverse variances on the log scale. This is not a fit of each
-  individual game's logged length.
-- Parity fit: mean(T)/n^2 = alpha + beta*(n-7) + gamma*I(even), weighted by
-  inverse variances of the normalised group means. This assumes a linear
-  residual size trend and has only five board-size levels.
-- Model intervals: percentile bootstrap, resampling games within board size
-  while keeping original fit weights fixed. They describe sampling uncertainty
-  conditional on the models, not model or algorithm uncertainty.
+This reads the included JSONL records, replays the games, and regenerates the
+CSV summaries, `analysis.json`, and six figures in PNG and PDF formats under
+`Go_MCTS_Analysis_Package/go_mcts_analysis/analysis/`.
+The report PDF and Markdown are supplied as finished documents; a PDF report
+builder is not included.
 
-The same 25 seed labels occur in both unequal-budget colour conditions.
-They are different settings, not duplicate games. Their pooled 48/50 rate is
-descriptive; no independent-binomial pooled interval is reported.
+To keep the supplied outputs unchanged, write the reproduced analysis elsewhere:
 
-## Data reconciliation and limitations
+```bash
+python Go_MCTS_Analysis_Package/go_mcts_analysis/analyse_go.py --output reproduced_analysis
+```
 
-Original files contain 654 records: 650 unique completed games, two duplicated
-finished records and two search errors. A duplicate is identified by board
-size, both search budgets, komi and seed; game_id alone is not globally unique.
-Matching duplicates must agree on moves, boards, scores and settings. The
-later copy is retained; timings and source-local game IDs can differ.
+## Main findings
 
-The failed 8 x 8 seed 18061 is recovered in the later batch. The failed
-9 x 9 seed 19007 remains unfinished; its later batch instead includes seed
-19101. The report discloses this departure from the original seed plan.
-Failed games are not counted as wins, draws or short finished games.
+The dataset contains 650 unique completed games. The 100-versus-100 baseline
+has 100 games at each board size from 5 x 5 through 9 x 9. Average game length
+was compatible with approximately `1.325 * n^2` over these sizes.
 
-All completed games and failed partial logs are independently replayed.
-This checks moves, captures, suicide, positional superko, final passes,
-recorded board states and final scores. It does not validate the MCTS source.
-Very short completed games remain in the analysis; they are legitimate
-outputs of the agents and rules and are relevant to their limitations.
+On 5 x 5, the 1,000-iteration agent won 48 of 50 games against the 100-iteration
+agent, with 25 games in each colour assignment. Increasing both agents from
+100 to 1,000 iterations per move produced little observed change in mean game
+length: 32.14 versus 32.60 turns.
 
-Scoring is the project's simplified area-scoring variant: remaining stones
-plus exclusively bordered empty regions, with 7.5 added to White. There is
-no automatic dead-stone removal or agreement phase. The report should not
-be presented as a study of full Chinese tournament rules or optimal Go.
-
-Runtime was not controlled for computer load. Search was budgeted by
-iterations per move. The real-game 500-turn cap is recorded in each JSONL
-record; the rollout cap and its development change are not encoded there.
-Check those details against the original game and MCTS source before
-finalising the implementation description.
+These results describe the tested agents and scoring variant. They do not
+establish optimal Go play, a human ranking, or a general law of game length.
+The [report](Go_MCTS_Analysis_Package/go_mcts_analysis/Go_MCTS_Report.pdf)
+discusses early passes, random rollouts, fixed komi, failed records and other
+limitations. Its source-audit caveats refer to the material supplied when the
+report was prepared; including source code here does not establish that it
+matches every earlier experiment version.
 
 ## Authorship and assistance
-Deepseek helped in creating this Report,README and compiling the data but none of the game or MCTS code.
+
+DeepSeek assisted with preparing the report and README and compiling the data.
+The game and MCTS code were written without that assistance.

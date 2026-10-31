@@ -3,8 +3,10 @@
 This package analyses James Ward-Phillips's 650 unique completed Go games.
 It contains the original uploaded game records, a research report, six figures
 in PNG and vector PDF formats, summary tables, and reproducible analysis code.
-The game engine and Pygame app were not included in the upload and are not
-included in this analysis package.
+The game engine and MCTS source are included in the parent directory. The
+standalone Pygame interface is not included in this repository snapshot.
+Source-audit limitations in this report describe the material available when
+the report was prepared.
 
 ## Start here
 
@@ -39,23 +41,21 @@ no resolved odd/even effect after an exploratory linear size adjustment.
 Use Python 3.10 or newer. From this directory:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r ../../requirements.txt
 python analyse_go.py
-python make_report.py
 ```
 
 To choose different directories:
 
 ```bash
 python analyse_go.py --input raw --output analysis
-python make_report.py --analysis analysis --output Go_MCTS_Report.pdf
 ```
 
-The report builder uses the DejaVu Sans fonts distributed with Matplotlib.
-Exact versions used for this analysis are recorded in `analysis/analysis.json`.
-The bootstrap uses 20,000 within-size resamples and seed 20261019. Rebuilding
-may change PDF metadata or rendering slightly across software versions, but
-the input records and statistical definitions are preserved.
+The PDF and Markdown reports are supplied as finished documents; the PDF report
+builder is not included. The analysis script regenerates the figures and tables.
+Exact versions used for the original analysis are recorded in
+`analysis/analysis.json`. The bootstrap uses 20,000 within-size resamples and
+seed 20261019. Figure rendering may vary slightly across software versions.
 
 ## How to understand the figures
 
